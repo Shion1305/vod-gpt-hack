@@ -9,8 +9,10 @@ on:
     branches: [main]
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./chrome
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,6 +28,6 @@ jobs:
           cache-dependency-path: './chrome/pnpm-lock.yaml'
       - name: Install dependencies
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --shamefully-hoist
       - run: pnpm run build
       - run: pnpm test
