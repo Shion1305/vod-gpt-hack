@@ -1,0 +1,11 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: server
+    volumes:
+      - ./:/app
+      - ~/.aws:/root/.aws
+    ports:
+      - 8080:8080
