@@ -1,10 +1,10 @@
 package main
 
 import (
+	"api/pkg/infra/dynamo"
+	"api/pkg/infra/s3"
 	"log"
 	"net/http"
-	"server/pkg/infra/dynamo"
-	"server/pkg/infra/s3"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,12 +24,12 @@ func main() {
 	// Health Check
 	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "server is running",
+			"message": "api is running",
 		})
 	})
 
 	if err := engine.Run(":8080"); err != nil {
-		log.Fatalf("failed to start server... %v", err)
+		log.Fatalf("failed to start api... %v", err)
 		return
 	}
 }
