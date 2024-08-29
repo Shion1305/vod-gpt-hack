@@ -84,11 +84,10 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 		}
 
 		input := &s3.PutObjectInput{
-			Bucket:        aws.String(conf.Infrastructure.S3.Bucket),
-			Key:           aws.String(fmt.Sprintf("%s/%s.mp4", id, uuid.New().String())),
-			Body:          file,
-			ContentLength: aws.Int64(fileHeader.Size),
-			ContentType:   aws.String(contentType),
+			Bucket:      aws.String(conf.Infrastructure.S3.Bucket),
+			Key:         aws.String(fmt.Sprintf("%s/%s.mp4", id, uuid.New().String())),
+			Body:        file,
+			ContentType: aws.String(contentType),
 		}
 
 		_, err = m.s.Client.PutObject(c, input)
