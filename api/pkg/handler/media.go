@@ -45,6 +45,7 @@ func (m MediaHandler) Create() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
+			return
 		}
 		_, err = m.d.Client.PutItem(context.TODO(), &dynamodb.PutItemInput{
 			TableName: aws.String("media"), Item: item,
@@ -53,6 +54,7 @@ func (m MediaHandler) Create() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
+			return
 		}
 		c.JSON(http.StatusCreated, gin.H{
 			"id": id,
@@ -68,11 +70,13 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"error": "Missing 'id' url parameter.",
 			})
+			return
 		}
 
 		file, fileHeader, err := c.Request.FormFile("file")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 		defer file.Close()
 
@@ -81,6 +85,7 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"error": "Missing Content-Type Header.",
 			})
+			return
 		}
 
 		input := &s3.PutObjectInput{
@@ -93,6 +98,7 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 		_, err = m.s.Client.PutObject(c, input)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
 
 		c.JSON(http.StatusCreated, gin.H{
