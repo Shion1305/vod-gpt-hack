@@ -1,9 +1,10 @@
 package dynamo
 
 import (
+	"api/pkg/config"
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
@@ -12,9 +13,10 @@ type Dynamo struct {
 }
 
 func NewDynamo() (*Dynamo, error) {
+	conf := config.Get()
 	ctx := context.Background()
 
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("ap-northeast-1"))
+	cfg, err := awsConfig.LoadDefaultConfig(ctx, awsConfig.WithRegion(conf.Infrastructure.DynamoDB.Region))
 	if err != nil {
 		return nil, err
 	}

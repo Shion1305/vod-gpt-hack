@@ -1,0 +1,6 @@
+infrastructure:
+  s3:
+    bucket: test-bucket
+    region: ap-northeast-1
+  dynamodb:
+    region: ap-northeast-1
