@@ -77,7 +77,7 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 		defer file.Close()
 
 		contentType := fileHeader.Header.Get("Content-Type")
-		if contentType == "" {
+		if contentType != "video/mp4" {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"error": "Missing Content-Type Header.",
 			})
