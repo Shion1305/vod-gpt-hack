@@ -1,0 +1,6 @@
+infrastructure:
+  s3:
+    bucket:
+    region:
+  dynamodb:
+    region:
