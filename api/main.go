@@ -1,6 +1,7 @@
 package main
 
 import (
+	handler "api/pkg/handler"
 	"api/pkg/infra/dynamo"
 	"api/pkg/infra/s3"
 	"log"
@@ -10,11 +11,11 @@ import (
 )
 
 func main() {
-	_, err := s3.NewS3()
+	s, err := s3.NewS3()
 	if err != nil {
 		log.Fatalf("failed to connect to s3, err: %v", err)
 	}
-	_, err = dynamo.NewDynamo()
+	d, err := dynamo.NewDynamo()
 	if err != nil {
 		log.Fatalf("failed to connect to dynamo, err: %v", err)
 	}
@@ -28,8 +29,23 @@ func main() {
 		})
 	})
 
+	apiV1 := engine.Group("/api/v1")
+
+	if err := implement(apiV1, s, d); err != nil {
+		log.Fatalf("failed to start server... %v", err)
+		return
+	}
+
 	if err := engine.Run(":8080"); err != nil {
 		log.Fatalf("failed to start api... %v", err)
 		return
 	}
+}
+
+func implement(g *gin.RouterGroup, s *s3.S3, d *dynamo.Dynamo) error {
+	mediaHandler := handler.NewMediaHandler(s, d)
+	g.Handle("POST", "/media/upload/:id", mediaHandler.UploadMP4())
+	g.Handle("GET", "/media/id", mediaHandler.Create())
+
+	return nil
 }
