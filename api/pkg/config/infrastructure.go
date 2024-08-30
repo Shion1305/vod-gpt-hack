@@ -3,6 +3,7 @@ package config
 type Infrastructure struct {
 	S3       S3       `yaml:"s3"`
 	DynamoDB DynamoDB `yaml:"dynamodb"`
+	SQS      SQS      `yaml:"sqs"`
 }
 
 type S3 struct {
@@ -12,4 +13,9 @@ type S3 struct {
 
 type DynamoDB struct {
 	Region string `yaml:"region"`
+}
+
+type SQS struct {
+	Region string `yaml:"sqs"`
+	Name   string `yaml:"name"`
 }
