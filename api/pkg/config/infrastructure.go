@@ -17,5 +17,5 @@ type DynamoDB struct {
 
 type SQS struct {
 	Region string `yaml:"sqs"`
-	Name   string `yaml:"name"`
+	URL    string `yaml:"url"`
 }

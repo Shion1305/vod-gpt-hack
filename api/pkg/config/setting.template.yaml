@@ -6,4 +6,4 @@ infrastructure:
     region:
   sqs:
     region:
-    name: 
+    url:
