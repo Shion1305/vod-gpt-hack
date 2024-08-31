@@ -30,13 +30,13 @@ func NewChatHandler(d *infraDynamo.Dynamo) *ChatHandler {
 func (h *ChatHandler) Start() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req schema.ChatRequest
-		if err := c.Bind(&req); err != nil {
+		if err := c.BindJSON(&req); err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		reqVID, err := uuid.Parse(req.VID)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("invalid uuid, %v: %v", req.VID, err).Error()})
 			return
 		}
 		chatRequest := domain.ChatRequest{
