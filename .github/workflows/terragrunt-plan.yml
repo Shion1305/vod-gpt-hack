@@ -23,30 +23,23 @@ jobs:
           role-to-assume: "arn:aws:iam::104927514697:role/GitHub-OIDC"
           role-duration-seconds: 3600
           role-session-name: GitHubActions
-
       - name: setup repository
         uses: actions/checkout@v4
-
       - name: Setup aqua
         uses: aquaproj/aqua-installer@v3.0.0
         with:
           aqua_version: v2.25.1
-
       - name: Load api-main-credential.yaml
         run: |
           echo "${{ secrets.API_MAIN_CRED }}" > infra/dev/api-main-credential.yaml
-
       - name: Terragrunt Init
         run: aqua exec terragrunt run-all init
-
       - name: Check terragrunt fmt
         working-directory: infra/dev
         run: aqua exec terragrunt fmt -check
-
       - name: Terragrunt validate
         working-directory: infra/dev
         run: aqua exec terragrunt validate
-
       - name: Terragrunt plan
         working-directory: infra/dev
         env:
