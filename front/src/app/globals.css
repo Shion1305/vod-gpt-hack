@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    --background-color: #1f2937; /* darkBackground */
+    --text-color: #f3f4f6; /* darkText */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -64,6 +66,8 @@
     @apply border-border;
   }
   body {
+    background-color: var(--background-color);
+    color: var(--text-color);
     @apply bg-background text-foreground;
   }
 }

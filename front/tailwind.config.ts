@@ -7,7 +7,7 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   prefix: "",
   theme: {
     container: {
@@ -51,6 +51,19 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        // 新しいカラーテーマの追加
+        chatBackground: {
+          light: "#f3f4f6", // gray-100
+          dark: "#1f2937", // gray-800
+        },
+        chatText: {
+          light: "#1f2937", // gray-800
+          dark: "#f3f4f6", // gray-100
+        },
+        videoBackground: {
+          light: "#111827", // gray-900
+          dark: "#000000", // black
         },
       },
       borderRadius: {
