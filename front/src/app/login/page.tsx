@@ -1,8 +1,10 @@
+"use client";
+
 import { User } from "lucide-react";
 import { useState } from "react";
 
 const LoginForm = () => {
-  const [stayLoggedIn, setStayLoggedIn] = useState(false);
+  const [stayLoggedIn, setStayLoggedIn] = useState<boolean>(false);
 
   return (
     <div className="flex items-center justify-center h-screen bg-slate-600">
