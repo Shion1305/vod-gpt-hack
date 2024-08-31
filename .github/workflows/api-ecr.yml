@@ -45,3 +45,23 @@ jobs:
           tags: 104927514697.dkr.ecr.us-west-2.amazonaws.com/progate-hackathon-vod-gpt-api-main:latest
           context: ./api
           file: ./api/Dockerfile
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition pg-example-task-api-server --query taskDefinition > task-definition.json
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: api-main-container
+          image: 104927514697.dkr.ecr.us-west-2.amazonaws.com/progate-hackathon-vod-gpt-api-main:latest
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: fargate-service
+          cluster: pg-ecs-cluster
+          wait-for-service-stability: true
