@@ -58,7 +58,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
       environment = [
         {
           name  = "ENV_LOCATION"
-          value = "/etc/setting.yaml"
+          value = "/app/setting.yaml"
         },
         {
           name  = "SQS_URL"
