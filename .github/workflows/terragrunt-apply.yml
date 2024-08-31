@@ -1,0 +1,49 @@
+name: "Run terraform apply on main updates"
+on:
+  pull_request:
+    branches:
+      - 'main'
+    types:
+      - closed
+jobs:
+  run-terraform-apply:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: "us-west-2"
+          role-to-assume: "arn:aws:iam::104927514697:role/GitHub-OIDC"
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: setup repository
+        uses: actions/checkout@v4
+
+      - name: Setup aqua
+        uses: aquaproj/aqua-installer@v3.0.0
+        with:
+          aqua_version: v2.25.1
+
+      - name: Terragrunt Init
+        run: terragrunt run-all init
+
+      - name: Check terragrunt fmt
+        working-directory: infra/dev
+        run: terragrunt fmt -check
+
+      - name: Terragrunt validate
+        working-directory: infra/dev
+        run: terragrunt validate
+
+      - name: Terragrunt apply
+        working-directory: infra/dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod 755 $GITHUB_WORKSPACE/.github/scripts/tfwrapper.sh
+          terragrunt run-all apply --terragrunt-non-interactive --terragrunt-tfpath $GITHUB_WORKSPACE/.github/scripts/tfwrapper.sh
