@@ -4,7 +4,10 @@
 name: build
 on:
   push:
-    branches: [release]
+    branches:
+      - release
+    paths:
+      - 'chrome/**'
 jobs:
   build:
     runs-on: ubuntu-latest
