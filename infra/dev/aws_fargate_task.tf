@@ -43,15 +43,15 @@ resource "aws_ecs_task_definition" "ecs_task" {
   // Replace definition with real application
   container_definitions = jsonencode([
     {
-      name = "sample-api-server-app"
+      name = "api-main-container"
       # サンプル用のイメージ
-      image     = "nginx"
+      image     = "${aws_ecr_repository.api-main.repository_url}:latest"
       cpu       = 256
       memory    = 512
       essential = true
       portMappings = [
         {
-          containerPort = 80
+          containerPort = 8080
           hostPort      = 80
         }
       ]
