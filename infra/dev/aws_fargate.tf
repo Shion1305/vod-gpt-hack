@@ -14,7 +14,7 @@ resource "aws_ecs_service" "fargate_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = [aws_subnet.public_subnet.id]
+    subnets          = [aws_subnet.public_subnet.id, aws_subnet.public_subnet2.id]
     security_groups  = [aws_security_group.fargate_sg.id]
     assign_public_ip = true
   }
@@ -33,6 +33,7 @@ resource "aws_lb" "alb" {
   security_groups    = [aws_security_group.fargate_sg.id]
   subnets = [
     aws_subnet.public_subnet.id,
+    aws_subnet.public_subnet2.id,
   ]
   drop_invalid_header_fields = true
 
