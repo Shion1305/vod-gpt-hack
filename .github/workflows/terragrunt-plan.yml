@@ -6,6 +6,8 @@ on:
     types:
       - opened
       - synchronize
+    paths:
+      - 'infra/**'
 jobs:
   run-terraform-plan:
     runs-on: ubuntu-latest
@@ -31,15 +33,15 @@ jobs:
           aqua_version: v2.25.1
 
       - name: Terragrunt Init
-        run: terragrunt run-all init
+        run: aqua exec terragrunt run-all init
 
       - name: Check terragrunt fmt
         working-directory: infra/dev
-        run: terragrunt fmt -check
+        run: aqua exec terragrunt fmt -check
 
       - name: Terragrunt validate
         working-directory: infra/dev
-        run: terragrunt validate
+        run: aqua exec terragrunt validate
 
       - name: Terragrunt plan
         working-directory: infra/dev
@@ -47,4 +49,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod 755 $GITHUB_WORKSPACE/.github/scripts/tfwrapper.sh
-          terragrunt run-all plan --terragrunt-non-interactive --terragrunt-tfpath $GITHUB_WORKSPACE/.github/scripts/tfwrapper.sh
+          aqua exec terragrunt run-all plan --terragrunt-non-interactive --terragrunt-tfpath $GITHUB_WORKSPACE/.github/scripts/tfwrapper.sh
