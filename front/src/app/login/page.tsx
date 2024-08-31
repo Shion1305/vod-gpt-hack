@@ -1,39 +1,46 @@
-import { Plus, Search } from "lucide-react";
+"use client";
 
-const Login = () => {
+import { User } from "lucide-react";
+import { useState } from "react";
+
+const LoginForm = () => {
+  const [stayLoggedIn, setStayLoggedIn] = useState<boolean>(false);
+
   return (
-    <div className="bg-slate-600 min-h-screen">
-      <header className="bg-slate-500 p-4">
-        <h1 className="text-white text-2xl font-bold">HogeHoge</h1>
-      </header>
-      <main className="p-4">
-        <div className="flex justify-between items-center mb-6">
-          <div className="bg-slate-200 rounded-full flex items-center p-2 flex-grow mr-4">
-            <Search className="text-gray-500 mr-2" />
-            <input
-              type="text"
-              placeholder="Hinted search text"
-              className="bg-transparent outline-none flex-grow"
-            />
+    <div className="flex items-center justify-center h-screen bg-slate-600">
+      <div className="bg-slate-700 p-8 rounded-lg shadow-lg w-80">
+        <div className="flex justify-center mb-6">
+          <div className="bg-white rounded-full p-3">
+            <User size={48} className="text-slate-700" />
           </div>
-          <button className="bg-pink-200 text-pink-700 px-4 py-2 rounded-full flex items-center">
-            <Plus className="mr-1" size={18} />
-            Upload
+        </div>
+        <input
+          type="text"
+          placeholder="USERNAME"
+          className="w-full p-2 mb-4 rounded"
+        />
+        <input
+          type="password"
+          placeholder="PASSWORD"
+          className="w-full p-2 mb-4 rounded"
+        />
+        <div className="flex items-center justify-between mb-4">
+          <label className="flex items-center text-white">
+            <input
+              type="checkbox"
+              checked={stayLoggedIn}
+              onChange={() => setStayLoggedIn(!stayLoggedIn)}
+              className="mr-2"
+            />
+            STAY LOGGED IN
+          </label>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded">
+            LOGIN
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          {[...Array(6)].map((_, index) => (
-            <div
-              key={index}
-              className={`bg-white rounded-lg aspect-video ${
-                index === 4 ? "ring-2 ring-blue-500" : ""
-              }`}
-            ></div>
-          ))}
-        </div>
-      </main>
+      </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginForm;
