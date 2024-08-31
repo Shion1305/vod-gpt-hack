@@ -1,5 +1,7 @@
 FROM golang:1.22.1-alpine3.19
 
+RUN apk update && apk add watchexec
+
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -8,4 +10,8 @@ RUN go mod download
 
 COPY . .
 
-CMD go run main.go
+# --force-poll: 500msごとにファイル変更のチェック
+# -r: ファイル変更を検知して、指定のコマンドを実行
+# -e go: 拡張子が`go`であるファイルを監視対象とする
+# -- go run main.go: ファイル変更を検知して、指定のコマンドを実行
+CMD watchexec --force-poll 500 -r -e go -- go run main.go
