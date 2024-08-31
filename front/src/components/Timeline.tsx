@@ -27,39 +27,44 @@ const Timeline = ({
     setIsDragging(type);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-
-    const rect = timelineRef.current!.getBoundingClientRect();
-    const position = ((e.clientX - rect.left) / rect.width) * 100;
-
-    if (isDragging === "current") {
-      onTimeChange(Math.max(0, Math.min(100, position)));
-    } else if (isDragging === "start") {
-      onSelectionChange(
-        Math.max(0, Math.min(selectionEnd, position)),
-        selectionEnd,
-      );
-    } else if (isDragging === "end") {
-      onSelectionChange(
-        selectionStart,
-        Math.max(selectionStart, Math.min(100, position)),
-      );
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(null);
-  };
-
   useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      const rect = timelineRef.current!.getBoundingClientRect();
+      const position = ((e.clientX - rect.left) / rect.width) * 100;
+
+      if (isDragging === "current") {
+        onTimeChange(Math.max(0, Math.min(100, position)));
+      } else if (isDragging === "start") {
+        onSelectionChange(
+          Math.max(0, Math.min(selectionEnd, position)),
+          selectionEnd,
+        );
+      } else if (isDragging === "end") {
+        onSelectionChange(
+          selectionStart,
+          Math.max(selectionStart, Math.min(100, position)),
+        );
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(null);
+    };
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging]);
+  }, [
+    isDragging,
+    onSelectionChange,
+    onTimeChange,
+    selectionEnd,
+    selectionStart,
+  ]);
 
   return (
     <div className="mb-4" ref={timelineRef}>
