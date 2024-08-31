@@ -6,6 +6,7 @@ transcribeが保存したjsonファイルを読み込んで、字幕データを
 import os
 import json
 import boto3
+from decimal import Decimal
 
 
 def lambda_handler(event, context):
@@ -43,10 +44,9 @@ def lambda_handler(event, context):
                     Item={
                         "id": item["id"],
                         "media_id": str(item["media_id"]),
-                        "type": item["type"],
-                        "alternatives": item["alternatives"],
-                        "start_time": item["start_time"],
-                        "end_time": item["end_time"],
+                        "content": item["alternatives"][0]["content"],
+                        "start_time": Decimal(item["start_time"]),
+                        "end_time": Decimal(item["end_time"]),
                     }
                 )
     except Exception as e:
