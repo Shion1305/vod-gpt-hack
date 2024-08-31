@@ -30,7 +30,7 @@ resource "aws_lb" "alb" {
   name_prefix        = "${local.prefix}-"
   internal           = false #tfsec:ignore:aws-elb-alb-not-public
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.fargate_sg.id]
+  security_groups    = [aws_security_group.external_sg.id]
   subnets = [
     aws_subnet.public_subnet.id,
     aws_subnet.public_subnet2.id,
