@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
 import {
   MainContainer,
   ChatContainer,
@@ -10,43 +9,47 @@ import {
   TypingIndicator,
   Avatar,
 } from "@chatscope/chat-ui-kit-react";
+import React, { useState, useCallback, useEffect } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import { v4 as uuidv4 } from "uuid";
 import SubtitleSummary from "@/components/SubtitleSummary";
 import Timeline from "@/components/Timeline";
 import VideoPlayer from "@/components/VideoPlayer";
 import { MoonIcon, SunIcon } from "@heroicons/react/24/solid";
-import { v4 as uuidv4 } from 'uuid';
 
 const App = () => {
   // チャットメッセージの状態
   const [messages, setMessages] = useState<
     {
-      message: string;
-      direction: "incoming" | "outgoing";
-      sender: string;
-      position: "single" | "first" | "normal" | "last";
+      message?: string;
+      sentTime?: string;
+      sender?: string;
+      direction: "incoming" | "outgoing" | 0 | 1;
+      position: "single" | "first" | "normal" | "last" | 0 | 1 | 2 | 3;
+      type?: "html" | "text" | "image" | "custom";
+      payload?: MessagePayload;
     }[]
   >([]);
 
   // ビデオ関連の状態
-  const [currentTime, setCurrentTime] = useState(0);          // 現在の再生時間
-  const [selectionStart, setSelectionStart] = useState(0);    // 選択範囲の開始時間
-  const [selectionEnd, setSelectionEnd] = useState(100);      // 選択範囲の終了時間
-  const [subtitle, setSubtitle] = useState("");               // 字幕テキスト
-  const [summary, setSummary] = useState("");                 // 要約テキスト
+  const [currentTime, setCurrentTime] = useState(0); // 現在の再生時間
+  const [selectionStart, setSelectionStart] = useState(0); // 選択範囲の開始時間
+  const [selectionEnd, setSelectionEnd] = useState(100); // 選択範囲の終了時間
+  const [subtitle, setSubtitle] = useState(""); // 字幕テキスト
+  const [summary, setSummary] = useState(""); // 要約テキスト
   const [videoSrc, setVideoSrc] = useState<string | null>(null); // ビデオソースのURL
-  const [videoDuration, setVideoDuration] = useState(0);      // ビデオの総再生時間
-  const [videoId, setVideoId] = useState<string | null>(null);// ビデオの一意のID
+  const [videoDuration, setVideoDuration] = useState(0); // ビデオの総再生時間
+  const [videoId, setVideoId] = useState<string | null>(null); // ビデオの一意のID
 
   // UIの状態
-  const [isDarkMode, setIsDarkMode] = useState(false);        // ダークモードの状態
+  const [isDarkMode, setIsDarkMode] = useState(false); // ダークモードの状態
 
   // ダークモードの切り替えを処理するエフェクト
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [isDarkMode]);
 
@@ -74,65 +77,70 @@ const App = () => {
   };
 
   // メッセージを送信し、APIと通信する関数
-  const handleSend = useCallback(async (message: string) => {
-    if (!message.trim()) return; // 空のメッセージを送信しない
+  const handleSend = useCallback(
+    async (message: string) => {
+      if (!message.trim()) return; // 空のメッセージを送信しない
 
-    // ユーザーのメッセージをチャットに追加
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      {
-        message,
-        direction: "outgoing",
-        sender: "user",
-        position: "single",
-      },
-    ]);
-
-    try {
-      // APIにリクエストを送信
-      const response = await fetch('/api/v1/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // ユーザーのメッセージをチャットに追加
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          message,
+          direction: "outgoing",
+          sender: "user",
+          position: "single",
+          type: "text",
         },
-        body: JSON.stringify({
-          question: message,
-          from: selectionStart,
-          to: selectionEnd,
-          vid: videoId,
-        }),
-      });
+      ]);
 
-      if (!response.ok) {
-        throw new Error('API request failed');
+      try {
+        // APIにリクエストを送信
+        const response = await fetch("/api/v1/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: message,
+            from: selectionStart,
+            to: selectionEnd,
+            vid: videoId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("API request failed");
+        }
+
+        const data = await response.json();
+
+        // AIの応答をチャットに追加
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            message: data.response,
+            direction: "incoming",
+            sender: "AI",
+            position: "single",
+          },
+        ]);
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // エラーメッセージをチャットに追加
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            message:
+              "申し訳ありませんが、エラーが発生しました。もう一度お試しください。",
+            direction: "incoming",
+            sender: "AI",
+            position: "single",
+          },
+        ]);
       }
-
-      const data = await response.json();
-
-      // AIの応答をチャットに追加
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          message: data.response,
-          direction: "incoming",
-          sender: "AI",
-          position: "single",
-        },
-      ]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // エラーメッセージをチャットに追加
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          message: "申し訳ありませんが、エラーが発生しました。もう一度お試しください。",
-          direction: "incoming",
-          sender: "AI",
-          position: "single",
-        },
-      ]);
-    }
-  }, [selectionStart, selectionEnd, videoId]);
+    },
+    [selectionStart, selectionEnd, videoId]
+  );
 
   // ファイルがアップロードされたときの処理
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,26 +161,40 @@ const App = () => {
 
   // キーボードイベントの処理（Enterキーでメッセージを送信）
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       event.preventDefault();
       const input = event.target as HTMLInputElement;
       handleSend(input.value);
-      input.value = ''; // メッセージ送信後に入力フィールドをクリア
+      input.value = ""; // メッセージ送信後に入力フィールドをクリア
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-900"> {/* メインコンテナ */}
-      <div className="w-1/2 bg-gray-800 shadow-md"> {/* チャット部分 */}
+    <div className="flex h-screen bg-gray-900">
+      {" "}
+      {/* メインコンテナ */}
+      <div className="w-1/2 bg-gray-800 shadow-md">
+        {" "}
+        {/* チャット部分 */}
         <MainContainer className="bg-gray-800 text-gray-100 relative">
-          <div className="absolute inset-0 bg-gray-900 opacity-50 z-0"></div> {/* 背景の暗い色 */}
+          <div className="absolute inset-0 bg-gray-900 opacity-50 z-0"></div>{" "}
+          {/* 背景の暗い色 */}
           <ChatContainer className="bg-gray-800 relative z-10">
             <MessageList
-              typingIndicator={<TypingIndicator content="AI is thinking" className="text-blue-300 text-xl" />}
+              typingIndicator={
+                <TypingIndicator
+                  content="AI is thinking"
+                  className="text-blue-300 text-xl"
+                />
+              }
               className="bg-gray-800 text-xl"
             >
               {messages.map((m, i) => (
-                <Message key={i} model={m} className="bg-gray-700 border-gray-600 text-xl">
+                <Message
+                  key={i}
+                  model={m}
+                  className="bg-gray-700 border-gray-600 text-xl"
+                >
                   <Avatar
                     src={
                       m.direction === "incoming"
@@ -195,7 +217,9 @@ const App = () => {
           </ChatContainer>
         </MainContainer>
       </div>
-      <div className="w-1/2 bg-gray-900 p-6 flex flex-col"> {/* ビデオプレーヤーとタイムライン部分 */}
+      <div className="w-1/2 bg-gray-900 p-6 flex flex-col">
+        {" "}
+        {/* ビデオプレーヤーとタイムライン部分 */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           <div className="flex-1 mb-6">
             <input

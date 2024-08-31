@@ -32,6 +32,10 @@ jobs:
         with:
           aqua_version: v2.25.1
 
+      - name: Load api-main-credential.yaml
+        run: |
+          echo "${{ secrets.API_MAIN_CRED }}" > infra/dev/api-main-credential.yaml
+
       - name: Terragrunt Init
         run: aqua exec terragrunt run-all init
 

@@ -4,11 +4,11 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Timelineコンポーネントの型定義
 const Timeline = ({
-  currentTime,         // 現在の再生時間（パーセンテージ）
-  selectionStart,      // 選択範囲の開始位置（パーセンテージ）
-  selectionEnd,        // 選択範囲の終了位置（パーセンテージ）
-  onTimeChange,        // 現在時間が変更されたときのコールバック関数
-  onSelectionChange,   // 選択範囲が変更されたときのコールバック関数
+  currentTime, // 現在の再生時間（パーセンテージ）
+  selectionStart, // 選択範囲の開始位置（パーセンテージ）
+  selectionEnd, // 選択範囲の終了位置（パーセンテージ）
+  onTimeChange, // 現在時間が変更されたときのコールバック関数
+  onSelectionChange, // 選択範囲が変更されたときのコールバック関数
 }: {
   currentTime: number;
   selectionStart: number;
@@ -20,50 +20,47 @@ const Timeline = ({
   const [isDragging, setIsDragging] = useState<
     "current" | "start" | "end" | null
   >(null);
-  
+
   // タイムライン要素への参照
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // マウスダウンイベントのハンドラ
   const handleMouseDown = (
     e: React.MouseEvent,
-    type: "current" | "start" | "end" | null,
+    type: "current" | "start" | "end" | null
   ) => {
     setIsDragging(type);
   };
 
-  // マウス移動イベントのハンドラ
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !timelineRef.current) return;
-
-    const rect = timelineRef.current.getBoundingClientRect();
-    const position = ((e.clientX - rect.left) / rect.width) * 100;
-
-    if (isDragging === "current") {
-      // 現在時間のマーカーをドラッグ中
-      onTimeChange(Math.max(0, Math.min(100, position)));
-    } else if (isDragging === "start") {
-      // 選択範囲の開始マーカーをドラッグ中
-      onSelectionChange(
-        Math.max(0, Math.min(selectionEnd, position)),
-        selectionEnd,
-      );
-    } else if (isDragging === "end") {
-      // 選択範囲の終了マーカーをドラッグ中
-      onSelectionChange(
-        selectionStart,
-        Math.max(selectionStart, Math.min(100, position)),
-      );
-    }
-  };
-
-  // マウスアップイベントのハンドラ
-  const handleMouseUp = () => {
-    setIsDragging(null);
-  };
-
-  // マウス移動とマウスアップのイベントリスナーを設定
   useEffect(() => {
+    // マウス移動イベントのハンドラ
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !timelineRef.current) return;
+
+      const rect = timelineRef.current!.getBoundingClientRect();
+      const position = ((e.clientX - rect.left) / rect.width) * 100;
+
+      if (isDragging === "current") {
+        // 現在時間のマーカーをドラッグ中
+        onTimeChange(Math.max(0, Math.min(100, position)));
+      } else if (isDragging === "start") {
+        // 選択範囲の開始マーカーをドラッグ中
+        onSelectionChange(
+          Math.max(0, Math.min(selectionEnd, position)),
+          selectionEnd
+        );
+      } else if (isDragging === "end") {
+        // 選択範囲の終了マーカーをドラッグ中
+        onSelectionChange(
+          selectionStart,
+          Math.max(selectionStart, Math.min(100, position))
+        );
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(null);
+    };
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
     return () => {
@@ -71,7 +68,13 @@ const Timeline = ({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging]);
+  }, [
+    isDragging,
+    onSelectionChange,
+    onTimeChange,
+    selectionEnd,
+    selectionStart,
+  ]);
 
   return (
     <div className="mb-8" ref={timelineRef}>

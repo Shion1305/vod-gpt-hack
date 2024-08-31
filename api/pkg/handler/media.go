@@ -7,6 +7,7 @@ import (
 	infraS3 "api/pkg/infra/s3"
 	infraSQS "api/pkg/infra/sqs"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -25,6 +26,11 @@ type MediaHandler struct {
 	s  *infraS3.S3
 	d  *infraDynamo.Dynamo
 	sq *infraSQS.SQS
+}
+
+type SQSBody struct {
+	ID       string `json:"id"`
+	FileName string `json:"fileName"`
 }
 
 func NewMediaHandler(s *infraS3.S3, d *infraDynamo.Dynamo, sq *infraSQS.SQS) MediaHandler {
@@ -92,9 +98,10 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 			return
 		}
 
+		fileName := uuid.New().String()
 		input := &s3.PutObjectInput{
 			Bucket:      aws.String(conf.Infrastructure.S3.Bucket),
-			Key:         aws.String(fmt.Sprintf("%s/%s.mp4", id, uuid.New().String())),
+			Key:         aws.String(fmt.Sprintf("%s/%s.mp4", id, fileName)),
 			Body:        file,
 			ContentType: aws.String(contentType),
 		}
@@ -105,8 +112,18 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 			return
 		}
 
+		messageBody := SQSBody{
+			ID:       id,
+			FileName: fileName,
+		}
+
+		jsonData, err := json.Marshal(messageBody)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
 		sqsParams := &sqs.SendMessageInput{
-			MessageBody: aws.String(id),
+			MessageBody: aws.String(string(jsonData)),
 			QueueUrl:    aws.String(conf.Infrastructure.SQS.URL),
 		}
 
