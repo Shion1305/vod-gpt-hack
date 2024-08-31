@@ -32,13 +32,13 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 
 
 resource "aws_ecs_task_definition" "ecs_task" {
-  family                   = "${local.prefix}-example-task-api-server"
-  network_mode             = "awsvpc"
+  family        = "${local.prefix}-example-task-api-server"
+  network_mode  = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  cpu           = "256"
+  memory        = "512"
+  task_role_arn = aws_iam_role.ecs_task_role.arn
+  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
 
   // Replace definition with real application
   container_definitions = jsonencode([
@@ -63,12 +63,14 @@ resource "aws_ecs_task_definition" "ecs_task" {
         {
           name  = "SQS_URL"
           value = aws_sqs_queue.transcribe-sqs.url
-        }
-      ]
-      secrets = [
+        },
         {
-          name      = "ENV_CONTENT"
-          valueFrom = aws_secretsmanager_secret.api-main-yaml-credential.arn
+          name  = "S3_BUCKET"
+          value = aws_s3_bucket.vod-store.bucket
+        },
+        {
+          name  = "REGION"
+          value = "us-west-2"
         }
       ]
     }
