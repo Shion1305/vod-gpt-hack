@@ -75,3 +75,50 @@ resource "aws_ecs_task_definition" "ecs_task" {
   ])
 }
 
+resource "aws_iam_policy" "secrets_manager_access_policy" {
+  name        = "${local.prefix}-secrets-manager-access-policy"
+  description = "Allow access to Secrets Manager"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_secrets_manager" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.secrets_manager_access_policy.arn
+}
+
+
+resource "aws_iam_policy" "ecr_access_policy" {
+  name        = "${local.prefix}-ecr-access-policy"
+  description = "Allow ECS tasks to pull images from ECR"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:GetAuthorizationToken"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_ecr_access" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.ecr_access_policy.arn
+}
