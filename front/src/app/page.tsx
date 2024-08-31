@@ -8,8 +8,10 @@ import {
   TypingIndicator,
   Avatar,
 } from "@chatscope/chat-ui-kit-react";
+import { MessagePayload } from "@chatscope/chat-ui-kit-react/src/components/Message/Message";
 import { useState } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import "../style.css";
 import SubtitleSummary from "../components/SubtitleSummary";
 import Timeline from "../components/Timeline";
 import VideoPlayer from "../components/VideoPlayer";
@@ -17,10 +19,13 @@ import VideoPlayer from "../components/VideoPlayer";
 const App = () => {
   const [messages, setMessages] = useState<
     {
-      message: string;
-      direction: "incoming" | "outgoing";
-      sender: string;
-      position: "single" | "first" | "normal" | "last";
+      message?: string;
+      sentTime?: string;
+      sender?: string;
+      direction: "incoming" | "outgoing" | 0 | 1;
+      position: "single" | "first" | "normal" | "last" | 0 | 1 | 2 | 3;
+      type?: "html" | "text" | "image" | "custom";
+      payload?: MessagePayload;
     }[]
   >([]);
   const [currentTime, setCurrentTime] = useState(0);
@@ -40,7 +45,7 @@ const App = () => {
 
   const handleSummarize = () => {
     setSummary(
-      `${selectionStart}秒から${selectionEnd}秒までの要約がここに表示されます。`
+      `${selectionStart}秒から${selectionEnd}秒までの要約がここに表示されます。`,
     );
   };
 
@@ -52,6 +57,7 @@ const App = () => {
         direction: "outgoing",
         sender: "user",
         position: "single",
+        type: "text",
       },
     ]);
 
