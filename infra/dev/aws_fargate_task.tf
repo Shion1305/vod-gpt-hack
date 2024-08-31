@@ -55,8 +55,22 @@ resource "aws_ecs_task_definition" "ecs_task" {
           hostPort      = 8080
         }
       ]
-      environment = []
-      secrets     = []
+      environment = [
+        {
+          name  = "ENV_LOCATION"
+          value = "/etc/setting.yaml"
+        },
+        {
+          name  = "SQS_URL"
+          value = aws_sqs_queue.transcribe-sqs.url
+        }
+      ]
+      secrets = [
+        {
+          name      = "ENV_CONTENT"
+          valueFrom = aws_secretsmanager_secret.api-main-yaml-credential.arn
+        }
+      ]
     }
   ])
 }
