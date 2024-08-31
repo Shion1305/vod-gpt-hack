@@ -95,17 +95,19 @@ func (ch *ChatHandler) SendDummy() gin.HandlerFunc {
 		sampleText += sampleText
 		sampleText += sampleText
 		sampleText += sampleText
+		sampleRune := []rune(sampleText)
 
 		respCh := make(chan string)
 		go func() {
 			time.Sleep(50 * time.Millisecond)
 			// 2文字ずつ返す
-			for i := 0; i < len(sampleText); i += 2 {
-				if i+2 > len(sampleText) {
-					respCh <- sampleText[i:]
+			for i := 0; i < len(sampleRune); i += 2 {
+				if i+2 > len(sampleRune) {
+					respCh <- string(sampleRune[i:])
 					break
 				}
-				respCh <- sampleText[i : i+2]
+				respCh <- string(sampleRune[i : i+2])
+				fmt.Println(string(sampleRune[i : i+2]))
 				time.Sleep(100 * time.Millisecond)
 			}
 			close(respCh)
