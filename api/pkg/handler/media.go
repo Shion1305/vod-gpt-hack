@@ -5,6 +5,7 @@ import (
 	"api/pkg/domain"
 	infraDynamo "api/pkg/infra/dynamo"
 	infraS3 "api/pkg/infra/s3"
+	infraSQS "api/pkg/infra/sqs"
 	"context"
 	"fmt"
 	"net/http"
@@ -14,20 +15,23 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type MediaHandler struct {
-	s *infraS3.S3
-	d *infraDynamo.Dynamo
+	s  *infraS3.S3
+	d  *infraDynamo.Dynamo
+	sq *infraSQS.SQS
 }
 
-func NewMediaHandler(s *infraS3.S3, d *infraDynamo.Dynamo) MediaHandler {
+func NewMediaHandler(s *infraS3.S3, d *infraDynamo.Dynamo, sq *infraSQS.SQS) MediaHandler {
 	return MediaHandler{
 		s,
 		d,
+		sq,
 	}
 }
 
@@ -96,6 +100,17 @@ func (m MediaHandler) UploadMP4() gin.HandlerFunc {
 		}
 
 		_, err = m.s.Client.PutObject(c, input)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		sqsParams := &sqs.SendMessageInput{
+			MessageBody: aws.String(id),
+			QueueUrl:    aws.String(conf.Infrastructure.SQS.URL),
+		}
+
+		_, err = m.sq.Client.SendMessage(c, sqsParams)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

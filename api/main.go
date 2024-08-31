@@ -4,6 +4,7 @@ import (
 	handler "api/pkg/handler"
 	"api/pkg/infra/dynamo"
 	"api/pkg/infra/s3"
+	"api/pkg/infra/sqs"
 	"log"
 	"net/http"
 
@@ -19,6 +20,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to dynamo, err: %v", err)
 	}
+	sq, err := sqs.NewSQS()
+	if err != nil {
+		log.Fatalf("failed to connect to sqs, err: %v", err)
+	}
 
 	engine := gin.Default()
 
@@ -31,7 +36,7 @@ func main() {
 
 	apiV1 := engine.Group("/api/v1")
 
-	if err := implement(apiV1, s, d); err != nil {
+	if err := implement(apiV1, s, d, sq); err != nil {
 		log.Fatalf("failed to start server... %v", err)
 		return
 	}
@@ -42,8 +47,8 @@ func main() {
 	}
 }
 
-func implement(g *gin.RouterGroup, s *s3.S3, d *dynamo.Dynamo) error {
-	mediaHandler := handler.NewMediaHandler(s, d)
+func implement(g *gin.RouterGroup, s *s3.S3, d *dynamo.Dynamo, sq *sqs.SQS) error {
+	mediaHandler := handler.NewMediaHandler(s, d, sq)
 	g.Handle("POST", "/media/upload/:id", mediaHandler.UploadMP4())
 	g.Handle("GET", "/media/id", mediaHandler.Create())
 

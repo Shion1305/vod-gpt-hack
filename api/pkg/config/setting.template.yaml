@@ -4,3 +4,6 @@ infrastructure:
     region:
   dynamodb:
     region:
+  sqs:
+    region:
+    url:
