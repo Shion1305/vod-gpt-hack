@@ -1,62 +1,145 @@
 package handler
 
 import (
+	"api/pkg/domain"
 	infraDynamo "api/pkg/infra/dynamo"
+	"api/pkg/schema"
+	"api/pkg/uc"
 	"fmt"
+	"github.com/google/uuid"
+	"io"
+	"log"
 	"net/http"
+	"sync"
+	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 )
 
-type SendRequest struct {
-	ID        string  `json:"id"`
-	StartTime float32 `json:"startTime"`
-	EndTime   float32 `json:"endTime"`
-	Question  string  `json:"question"`
-}
-
 type ChatHandler struct {
-	d *infraDynamo.Dynamo
+	d     *uc.GetTranscript
+	cache reqCache
 }
 
 func NewChatHandler(d *infraDynamo.Dynamo) *ChatHandler {
 	return &ChatHandler{
-		d: d,
+		d: uc.NewGetTranscript(d),
 	}
 }
 
-func (ch ChatHandler) Send() gin.HandlerFunc {
+func (h *ChatHandler) Start() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req SendRequest
+		var req schema.ChatRequest
 		if err := c.Bind(&req); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		reqVID, err := uuid.Parse(req.VID)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		chatRequest := domain.ChatRequest{
+			Question: req.Question,
+			From:     req.From,
+			To:       req.To,
+			VID:      reqVID,
+		}
+		// issue UUID
+		reqID := chatRequest.VID
+		h.cache.add(reqID, chatRequest)
+		// send redirect to GET /api/v1/chat/:id
+		c.Redirect(http.StatusFound, "/api/v1/chat/"+reqID.String())
+		return
+	}
+}
+
+func (ch *ChatHandler) Send() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reqID := c.Param("id")
+		reqUUID, err := uuid.Parse(reqID)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		req := ch.cache.pop(reqUUID)
 
 		// クエリの実行
-		resp, err := ch.d.Client.Query(c, &dynamodb.QueryInput{
-			IndexName:              aws.String("media-id-id-index"),
-			TableName:              aws.String("transcribe"),
-			KeyConditionExpression: aws.String("#media_id = :media_id"),
-			FilterExpression:       aws.String("start_time > :start_time AND end_time < :end_time"),
-			ExpressionAttributeNames: map[string]string{
-				"#media_id": "media-id",
-			},
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				":media_id":   &types.AttributeValueMemberS{Value: req.ID},
-				":start_time": &types.AttributeValueMemberN{Value: fmt.Sprintf("%f", req.StartTime)},
-				":end_time":   &types.AttributeValueMemberN{Value: fmt.Sprintf("%f", req.EndTime)},
-			},
-		})
-
+		resp, err := ch.d.Execute(c, req.VID.String(), req.From, req.To)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-
 		c.JSON(http.StatusOK, resp)
 	}
+}
+
+func (ch *ChatHandler) SendDummy() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reqID := c.Param("id")
+		reqUUID, err := uuid.Parse(reqID)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		req := ch.cache.pop(reqUUID)
+		if req == nil {
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "request not found"})
+			return
+		}
+		sampleText := "あなたのリクエストを受け付けました。uuidは" + reqID + "です。質問は" + req.Question + "です。開始時間は" + fmt.Sprintf("%f", req.From) + "です。終了時間は" + fmt.Sprintf("%f", req.To) + "です。"
+		sampleText += sampleText
+		sampleText += sampleText
+		sampleText += sampleText
+		sampleText += sampleText
+
+		respCh := make(chan string)
+		go func() {
+			time.Sleep(50 * time.Millisecond)
+			// 2文字ずつ返す
+			for i := 0; i < len(sampleText); i += 2 {
+				if i+2 > len(sampleText) {
+					respCh <- sampleText[i:]
+					break
+				}
+				respCh <- sampleText[i : i+2]
+				time.Sleep(100 * time.Millisecond)
+			}
+			close(respCh)
+		}()
+
+		fullResp := ""
+		c.Stream(func(w io.Writer) bool {
+			if msg, ok := <-respCh; ok {
+				c.SSEvent("delta", msg)
+				fullResp += msg
+				log.Printf("received delta resp: %s\n", msg)
+				return true
+			}
+			log.Printf("received all messages\n")
+			return false
+		})
+	}
+}
+
+type reqCache struct {
+	m     sync.Mutex
+	store map[uuid.UUID]domain.ChatRequest
+}
+
+func (c *reqCache) add(id uuid.UUID, req domain.ChatRequest) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.store[id] = req
+}
+
+func (c *reqCache) pop(id uuid.UUID) *domain.ChatRequest {
+	c.m.Lock()
+	defer c.m.Unlock()
+	req, ok := c.store[id]
+	if !ok {
+		return nil
+	}
+	delete(c.store, id)
+	return &req
 }
