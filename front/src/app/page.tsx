@@ -10,7 +10,6 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import { MessagePayload } from "@chatscope/chat-ui-kit-react/src/components/Message/Message";
 import { useState } from "react";
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import "../style.css";
 import SubtitleSummary from "../components/SubtitleSummary";
 import Timeline from "../components/Timeline";
