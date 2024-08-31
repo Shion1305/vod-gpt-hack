@@ -5,6 +5,7 @@ import (
 	"api/pkg/infra/dynamo"
 	"api/pkg/infra/s3"
 	"api/pkg/infra/sqs"
+	"api/pkg/middleware"
 	"log"
 	"net/http"
 
@@ -35,6 +36,8 @@ func main() {
 	})
 
 	apiV1 := engine.Group("/api/v1")
+	cors := middleware.NewCORS()
+	cors.ConfigureCORS(apiV1)
 
 	if err := implement(apiV1, s, d, sq); err != nil {
 		log.Fatalf("failed to start server... %v", err)
