@@ -31,6 +31,9 @@ func init() {
 	if err = decoder.Decode(config); err != nil {
 		log.Fatalf("failed to decode setting file: %v\n", err)
 	}
+	if sqsUrl := os.Getenv("SQS_URL"); sqsUrl != "" {
+		config.Infrastructure.SQS.URL = sqsUrl
+	}
 }
 
 func Get() Config {
