@@ -3,4 +3,4 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 RUN go build -o main .
-CMD ["echo $ENV_CONTENT > /app/setting.yaml && ./main"]
+CMD ["./main"]
