@@ -52,7 +52,8 @@ func implement(g *gin.RouterGroup, s *s3.S3, d *dynamo.Dynamo, sq *sqs.SQS) erro
 	chatHandler := handler.NewChatHandler(d)
 	g.Handle("POST", "/media/upload/:id", mediaHandler.UploadMP4())
 	g.Handle("GET", "/media/id", mediaHandler.Create())
-	g.Handle("POST", "/chat", chatHandler.Send())
+	g.Handle("POST", "/chat", chatHandler.SendDummy())
+	g.Handle("GET", "/chat/:id", chatHandler.Start())
 
 	return nil
 }
