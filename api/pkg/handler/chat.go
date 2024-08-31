@@ -24,6 +24,9 @@ type ChatHandler struct {
 func NewChatHandler(d *infraDynamo.Dynamo) *ChatHandler {
 	return &ChatHandler{
 		d: uc.NewGetTranscript(d),
+		cache: reqCache{
+			store: make(map[uuid.UUID]domain.ChatRequest),
+		},
 	}
 }
 
