@@ -2,12 +2,12 @@
 
 import {
   ChatContainer,
-  MessageList,
   Message,
   MessageInput,
+  MessageList,
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { v4 as uuidv4 } from "uuid";
 import SubtitleSummary from "@/components/SubtitleSummary";
@@ -63,9 +63,9 @@ const App = () => {
   const [videoSrc, setVideoSrc] = useState<string | null>(null); // ビデオソースのURL
   const [videoDuration, setVideoDuration] = useState(0); // ビデオの総再生時間
   const params = useParams();
-  const videoId = params.id
+  const videoId = params.id;
   const searchParams = useSearchParams();
-  console.log(searchParams.get('s3'))
+  console.log(searchParams.get("s3"));
 
   // UIの状態
   const [isDarkMode, setIsDarkMode] = useState(false); // ダークモードの状態
@@ -99,7 +99,8 @@ const App = () => {
   const handleSummarize = async () => {
     try {
       // APIエンドポイントに要約リクエストを送信
-      const response = await fetch("/api/v1/summary", {
+      const url = `${host}/api/v1/summary`;
+      const postResponse = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,18 +110,21 @@ const App = () => {
           to: selectionEnd, // 選択範囲の終了時間（秒）
           vid: videoId, // ビデオの一意識別子
         }),
+        redirect: "manual",
       });
-
-      // レスポンスが正常でない場合はエラーをスロー
-      if (!response.ok) {
-        throw new Error("API request failed");
+      if (!postResponse.ok) {
+        console.log("failed to send message");
+        console.log(postResponse);
+        return;
       }
-
-      // レスポンスのJSONを解析
-      const data = await response.json();
-
-      // 生成された要約を状態にセット
-      setSummary(data.summary);
+      const id = await postResponse.json().then((data) => data.id);
+      const eventSource = new EventSource(`${host}/api/v1/chat/${id}`);
+      let aiResponse = "";
+      eventSource.addEventListener("delta", (event) => {
+        const data = event.data;
+        aiResponse += data;
+        setSummary(aiResponse);
+      });
     } catch (error) {
       // エラーをコンソールに出力
       console.error("Error generating summary:", error);
@@ -152,10 +156,10 @@ const App = () => {
       try {
         // APIにリクエストを送信
         const postData = {
-          question: "testtestsets",
-          from: 40.5,
-          to: 80.3,
-          vid: "6fd704e8-d41c-4ab1-a702-1f5ae5b793f6",
+          question: message,
+          from: selectionStart,
+          to: selectionEnd,
+          vid: videoId,
         };
         const url = `${host}/api/v1/chat`;
         const postResponse = await fetch(url, {
@@ -174,7 +178,7 @@ const App = () => {
         const id = await postResponse.json().then((data) => data.id);
         const prevMessages = messages;
         const eventSource = new EventSource(`${host}/api/v1/chat/${id}`);
-        aiResponse = "";
+        let aiResponse = "";
 
         eventSource.addEventListener("delta", (event) => {
           const data = event.data;
@@ -215,14 +219,6 @@ const App = () => {
   };
 
   // キーボードイベントの処理（Enterキーでメッセージを送信）
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const input = event.target as HTMLInputElement;
-      handleSend(input.innerText);
-      input.innerText = ""; // メッセージ送信後に入力フィールドをクリア
-    }
-  };
 
   return (
     <div className="p-4 h-screen w-screen bg-blue-950">
@@ -255,7 +251,6 @@ const App = () => {
               onSend={handleSend}
               attachButton={false}
               className="text-gray-100 border-gray-600 text-lg"
-              onKeyDown={handleKeyDown}
             />
           </ChatContainer>
         </ResizablePanel>
