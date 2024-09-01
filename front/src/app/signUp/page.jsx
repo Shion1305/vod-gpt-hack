@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { supabase} from '../supabase'
-import { useRouter } from "next/navigation";
-import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import {
