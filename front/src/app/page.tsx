@@ -16,6 +16,11 @@ import ResizableLayout from "@/components/ResizableLayout";
 import SubtitleSummary from "@/components/SubtitleSummary";
 import Timeline from "@/components/Timeline";
 import VideoPlayer from "@/components/VideoPlayer";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 const App = () => {
   // チャットメッセージの状態
@@ -28,7 +33,23 @@ const App = () => {
       position: "single" | "first" | "normal" | "last" | 0 | 1 | 2 | 3;
       type?: "html" | "text" | "image" | "custom";
     }[]
-  >([]);
+  >([
+    {
+      message: "Hello",
+      direction: "incoming",
+      position: "single",
+    },
+    {
+      message: "Hello, gpt",
+      direction: "outgoing",
+      position: "single",
+    },
+    {
+      message: "Bye",
+      direction: "incoming",
+      position: "single",
+    },
+  ]);
 
   // ビデオ関連の状態
   const [currentTime, setCurrentTime] = useState(0); // 現在の再生時間
@@ -197,9 +218,9 @@ const App = () => {
   };
 
   return (
-    <ResizableLayout
-      leftContent={
-        <MainContainer className="bg-gray-800 text-gray-100 relative h-full">
+    <div className="p-4 h-screen w-screen bg-blue-950">
+      <ResizablePanelGroup direction="horizontal" className="rounded-xl">
+        <ResizablePanel>
           <ChatContainer className="bg-gray-800 relative z-10">
             <MessageList
               typingIndicator={
@@ -216,15 +237,9 @@ const App = () => {
                   model={m}
                   className="bg-gray-700 border-gray-600 text-xl"
                 >
-                  <Avatar
-                    src={
-                      m.direction === "incoming"
-                        ? "/ai-avatar.png"
-                        : "/user-avatar.png"
-                    }
-                    name={m.sender}
-                  />
-                  <div className="text-gray-100">{m.message}</div>
+                  <Message.Header>
+                    {m.direction === "incoming" ? "GPT" : "You"}
+                  </Message.Header>
                 </Message>
               ))}
             </MessageList>
@@ -232,65 +247,66 @@ const App = () => {
               placeholder="質問を入力してください..."
               onSend={handleSend}
               attachButton={false}
-              className="bg-gray-700 text-gray-100 border-gray-600 text-xl"
+              className="text-gray-100 border-gray-600 text-lg"
               onKeyDown={handleKeyDown}
             />
           </ChatContainer>
-        </MainContainer>
-      }
-      rightContent={
-        <div className="bg-gray-900 p-6 flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto flex flex-col">
-            <div className="flex-1 mb-6">
-              <div className="relative mb-4 flex justify-center">
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="file-upload"
-                />
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded transition duration-200 text-lg"
-                >
-                  動画をアップ
-                </label>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel>
+          <div className="bg-gray-900 p-6 flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto flex flex-col">
+              <div className="flex-1 mb-6">
+                <div className="relative mb-4 flex justify-center">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded transition duration-200 text-lg"
+                  >
+                    動画をアップ
+                  </label>
+                </div>
+                {videoSrc && (
+                  <VideoPlayer
+                    src={videoSrc}
+                    currentTime={currentTime}
+                    onTimeUpdate={handleTimeChange}
+                    onDurationChange={handleDurationChange}
+                  />
+                )}
               </div>
-              {videoSrc && (
-                <VideoPlayer
-                  src={videoSrc}
-                  currentTime={currentTime}
-                  onTimeUpdate={handleTimeChange}
-                  onDurationChange={handleDurationChange}
+              <div className="flex-1">
+                <Timeline
+                  currentTime={(currentTime / videoDuration) * 100}
+                  selectionStart={(selectionStart / videoDuration) * 100}
+                  selectionEnd={(selectionEnd / videoDuration) * 100}
+                  onTimeChange={(newTime) =>
+                    handleTimeChange((newTime / 100) * videoDuration)
+                  }
+                  onSelectionChange={(start, end) =>
+                    handleSelectionChange(
+                      (start / 100) * videoDuration,
+                      (end / 100) * videoDuration
+                    )
+                  }
                 />
-              )}
-            </div>
-            <div className="flex-1">
-              <Timeline
-                currentTime={(currentTime / videoDuration) * 100}
-                selectionStart={(selectionStart / videoDuration) * 100}
-                selectionEnd={(selectionEnd / videoDuration) * 100}
-                onTimeChange={(newTime) =>
-                  handleTimeChange((newTime / 100) * videoDuration)
-                }
-                onSelectionChange={(start, end) =>
-                  handleSelectionChange(
-                    (start / 100) * videoDuration,
-                    (end / 100) * videoDuration
-                  )
-                }
-              />
-              <SubtitleSummary
-                subtitle={subtitle}
-                summary={summary}
-                onSummarize={handleSummarize}
-              />
+                <SubtitleSummary
+                  subtitle={subtitle}
+                  summary={summary}
+                  onSummarize={handleSummarize}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      }
-    />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 };
 
