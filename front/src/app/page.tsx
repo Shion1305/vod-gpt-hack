@@ -38,16 +38,7 @@ export default function Page() {
     <div className="h-screen">
       <Header />
       <div className="p-4">
-        <VideoCard />
-      </div>
-      <div className="p-4">
-        <VideoCard />
-      </div>
-      <div className="p-4">
-        <VideoCard />
-      </div>
-      <div className="p-4">
-        <VideoCard />
+        <VideoCard vid="vid" s3="s3" />
       </div>
     </div>
   )

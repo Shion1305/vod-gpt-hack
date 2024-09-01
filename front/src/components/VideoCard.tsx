@@ -4,11 +4,12 @@ import React from "react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { useRouter } from "next/navigation";
 
-const VideoCard = () => {
+
+const VideoCard = ({vid, s3}: {vid: string, s3: string}) => {
   const router = useRouter();
 
   const handleOnClick = () => {
-    return router.push("/watch/adsf");
+    return router.push(`/watch/${vid}?s3=${s3}`);
   };
 
   return (
