@@ -4,6 +4,7 @@ import (
 	"api/pkg/domain"
 	infraDynamo "api/pkg/infra/dynamo"
 	"api/pkg/schema"
+	"api/pkg/service"
 	"api/pkg/uc"
 	"fmt"
 	"github.com/google/uuid"
@@ -19,14 +20,20 @@ import (
 type ChatHandler struct {
 	d     *uc.GetTranscript
 	cache reqCache
+	br    *service.BedrockService
 }
 
 func NewChatHandler(d *infraDynamo.Dynamo) *ChatHandler {
+	br, err := service.NewBedrockService()
+	if err != nil {
+		log.Fatalf("failed to init bedrock service: %v", err)
+	}
 	return &ChatHandler{
 		d: uc.NewGetTranscript(d),
 		cache: reqCache{
 			store: make(map[uuid.UUID]domain.ChatRequest),
 		},
+		br: br,
 	}
 }
 
@@ -57,7 +64,7 @@ func (h *ChatHandler) Start() gin.HandlerFunc {
 	}
 }
 
-func (ch *ChatHandler) Send() gin.HandlerFunc {
+func (h *ChatHandler) Send() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		reqID := c.Param("id")
 		reqUUID, err := uuid.Parse(reqID)
@@ -65,15 +72,35 @@ func (ch *ChatHandler) Send() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		req := ch.cache.pop(reqUUID)
+		req := h.cache.pop(reqUUID)
+		//// クエリの実行
+		//resp, err := h.d.Execute(c, req.VID.String(), req.From, req.To)
+		//if err != nil {
+		//	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		//	return
+		//}
+		sampleTranscript := "先ほどの議題に戻りますが、この部分についてはもう少し詳細に検討する必要があるかと思います。特に、リスク管理の観点から見た場合、現状のプロセスでは対応が難しい点がいくつか見受けられます。そこで、次のステップとして、各チームから具体的な課題と改善提案を集めて、来週のミーティングで共有することを提案します。また、コストの見積もりについても再度精査が必要ですので、財務チームと連携して進めていきます。皆さんの意見をお聞かせください。"
+		sampleTranscript += "\n---\n"
+		sampleTranscript += "あなたは優秀な秘書です。上記の動画の文字起こしを元に、ユーザーの質問に答えてください。\n\n"
+		//userMessage := "文字起こしで触れられていることを要約して簡潔に答えてください。\n"
 
-		// クエリの実行
-		resp, err := ch.d.Execute(c, req.VID.String(), req.From, req.To)
+		completion, err := h.br.ClaudeMessageStreamCompletion(sampleTranscript, req.Question)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, resp)
+		fullResp := ""
+		c.Stream(func(w io.Writer) bool {
+			if msg, ok := <-completion; ok {
+				c.SSEvent("delta", msg)
+				fullResp += msg
+				log.Printf("received delta resp: %s\n", msg)
+				return true
+			}
+			log.Printf("received all messages\n")
+			return false
+		})
+		fmt.Println(fullResp)
 	}
 }
 
