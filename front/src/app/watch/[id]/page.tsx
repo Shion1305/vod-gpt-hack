@@ -7,6 +7,7 @@ import {
   MessageList,
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
+import { useSearchParams , useParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { v4 as uuidv4 } from "uuid";
@@ -23,8 +24,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 const App = () => {
   // チャットメッセージの状態
 
-  // const host = "https://vod-gpt.gopher.jp";
-  const host = "http://localhost:8080";
+  const host = "https://vod-gpt.gopher.jp";
+  // const host = "http://localhost:8080";
   const [messages, setMessages] = useState<
     {
       message?: string;
@@ -60,7 +61,10 @@ const App = () => {
   const [summary, setSummary] = useState(""); // 要約テキスト
   const [videoSrc, setVideoSrc] = useState<string | null>(null); // ビデオソースのURL
   const [videoDuration, setVideoDuration] = useState(0); // ビデオの総再生時間
-  const [videoId, setVideoId] = useState<string | null>(null); // ビデオの一意のID
+  const params = useParams();
+  const videoId = params.id;
+  const searchParams = useSearchParams();
+  console.log(searchParams.get("s3"));
 
   // UIの状態
   const [isDarkMode, setIsDarkMode] = useState(false); // ダークモードの状態
@@ -205,17 +209,6 @@ const App = () => {
     },
     [selectionStart, selectionEnd, videoId],
   );
-
-  // ファイルがアップロードされたときの処理
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setVideoSrc(url);
-      setVideoId(uuidv4());
-      // 新しいビデオIDを生成
-    }
-  };
 
   // ビデオの長さが変更されたときの処理
   const handleDurationChange = (duration: number) => {

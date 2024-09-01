@@ -1,5 +1,45 @@
 "use client";
 
+import { cache, useEffect, useState } from "react";
+import Header from "@/components/Header";
+import VideoCard from "@/components/VideoCard";
+
 export default function Page() {
-  return <div>Page</div>;
+  const host = "http://localhost:8080";
+  const [videos, setVideos] = useState([])
+
+  useEffect(() => {(
+    async() => {
+      const storedUserId = localStorage.getItem('userId')
+      const url = `${host}/api/v1/media/list`
+      try{
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            'userId': storedUserId
+          })
+        })
+
+        const data = await res.json();
+        console.log(data)
+
+        setVideos(data)
+
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  )})
+
+  return (
+    <div className="h-screen">
+      <Header />
+      <div className="p-4">
+        <VideoCard vid="vid" s3="s3" />
+      </div>
+    </div>
+  )
 }

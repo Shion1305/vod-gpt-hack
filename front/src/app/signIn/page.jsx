@@ -24,6 +24,7 @@ export default function SignIn() {
   const onSubmit = async () => {
     try {
       await supabase.auth.signInWithPassword({email, password})
+      localStorage.setItem("userId", email)
       router.push('/')
     } catch (e) {
       console.log(e) 
