@@ -21,6 +21,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const App = () => {
   // チャットメッセージの状態
@@ -254,54 +255,38 @@ const App = () => {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>
-          <div className="bg-gray-900 p-6 flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto flex flex-col">
-              <div className="flex-1 mb-6">
-                <div className="relative mb-4 flex justify-center">
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded transition duration-200 text-lg"
-                  >
-                    動画をアップ
-                  </label>
-                </div>
-                {videoSrc && (
-                  <VideoPlayer
-                    src={videoSrc}
-                    currentTime={currentTime}
-                    onTimeUpdate={handleTimeChange}
-                    onDurationChange={handleDurationChange}
-                  />
-                )}
-              </div>
-              <div className="flex-1">
-                <Timeline
-                  currentTime={(currentTime / videoDuration) * 100}
-                  selectionStart={(selectionStart / videoDuration) * 100}
-                  selectionEnd={(selectionEnd / videoDuration) * 100}
-                  onTimeChange={(newTime) =>
-                    handleTimeChange((newTime / 100) * videoDuration)
-                  }
-                  onSelectionChange={(start, end) =>
-                    handleSelectionChange(
-                      (start / 100) * videoDuration,
-                      (end / 100) * videoDuration
-                    )
-                  }
+          <div className="bg-gray-900 p-4 flex flex-col items-center h-full w-full">
+            <div className="mb-8 flex items-center justify-center w-full">
+              <Skeleton className="h-80 w-[80%] rounded-xl" />
+              {videoSrc && (
+                <VideoPlayer
+                  src={videoSrc}
+                  currentTime={currentTime}
+                  onTimeUpdate={handleTimeChange}
+                  onDurationChange={handleDurationChange}
                 />
-                <SubtitleSummary
-                  subtitle={subtitle}
-                  summary={summary}
-                  onSummarize={handleSummarize}
-                />
-              </div>
+              )}
+            </div>
+            <div className="w-[80%]">
+              <Timeline
+                currentTime={(currentTime / videoDuration) * 100}
+                selectionStart={(selectionStart / videoDuration) * 100}
+                selectionEnd={(selectionEnd / videoDuration) * 100}
+                onTimeChange={(newTime) =>
+                  handleTimeChange((newTime / 100) * videoDuration)
+                }
+                onSelectionChange={(start, end) =>
+                  handleSelectionChange(
+                    (start / 100) * videoDuration,
+                    (end / 100) * videoDuration
+                  )
+                }
+              />
+              <SubtitleSummary
+                subtitle={subtitle}
+                summary={summary}
+                onSummarize={handleSummarize}
+              />
             </div>
           </div>
         </ResizablePanel>
