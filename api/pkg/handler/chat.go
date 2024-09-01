@@ -91,7 +91,7 @@ func (h *ChatHandler) Send() gin.HandlerFunc {
 		}
 		systemInput := resp.Content
 		systemInput += "\n---\n"
-		systemInput += "これはある動画の文字起こしです。あなたは優秀なAIアシスタントです。文字起こしの内容を元に、ユーザーの質問に答えてください。\n\n"
+		systemInput += "以下の動画の文字起こしを元に、ユーザーの質問に簡潔かつ的確に答えてください。回答の冒頭には、「はい、わかりました」などの前置きは不要です。\n\n"
 		//userMessage := "文字起こしで触れられていることを要約して簡潔に答えてください。\n"
 
 		fmt.Println("start streaming")

@@ -32,7 +32,7 @@ func (uc *GetTranscript) Execute(
 	if err != nil {
 		return nil, err
 	}
-	partials := make([]domain.TranscriptionPartial, len(resp.Items))
+	partials := make([]domain.TranscriptionPartial, 0, len(resp.Items))
 	for _, item := range resp.Items {
 		content := item["content"].(*types.AttributeValueMemberS).Value
 		idS := item["id"].(*types.AttributeValueMemberN).Value

@@ -147,10 +147,10 @@ const App = () => {
       try {
         // APIにリクエストを送信
         const postData = {
-          question: "testtestsets",
-          from: 40.5,
-          to: 80.3,
-          vid: "6fd704e8-d41c-4ab1-a702-1f5ae5b793f6",
+          question: message,
+          from: selectionStart,
+          to: selectionEnd,
+          vid: videoId,
         };
         const url = `${host}/api/v1/chat`;
         const postResponse = await fetch(url, {
@@ -169,7 +169,7 @@ const App = () => {
         const id = await postResponse.json().then((data) => data.id);
         const prevMessages = messages;
         const eventSource = new EventSource(`${host}/api/v1/chat/${id}`);
-        aiResponse = "";
+        let aiResponse = "";
 
         eventSource.addEventListener("delta", (event) => {
           const data = event.data;
@@ -220,14 +220,6 @@ const App = () => {
   };
 
   // キーボードイベントの処理（Enterキーでメッセージを送信）
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const input = event.target as HTMLInputElement;
-      handleSend(input.innerText);
-      input.innerText = ""; // メッセージ送信後に入力フィールドをクリア
-    }
-  };
 
   return (
     <div className="p-4 h-screen w-screen bg-blue-950">
@@ -260,7 +252,6 @@ const App = () => {
               onSend={handleSend}
               attachButton={false}
               className="text-gray-100 border-gray-600 text-lg"
-              onKeyDown={handleKeyDown}
             />
           </ChatContainer>
         </ResizablePanel>
