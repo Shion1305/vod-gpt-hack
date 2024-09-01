@@ -61,7 +61,10 @@ func (m MediaHandler) Create() gin.HandlerFunc {
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
+				"error":  err.Error(),
+				"id":     id,
+				"userID": userID,
+				"item":   item,
 			})
 			return
 		}
