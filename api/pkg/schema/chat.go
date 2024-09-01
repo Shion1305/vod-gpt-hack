@@ -25,4 +25,5 @@ type ListEntry struct {
 	VID    string `json:"vid"`
 	S3     string `json:"s3"`
 	Status string `json:"status"`
+	Title  string `json:"title"`
 }

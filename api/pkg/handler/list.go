@@ -51,12 +51,16 @@ func (h *ListHandler) List() gin.HandlerFunc {
 			id := item["id"].(*types.AttributeValueMemberS).Value
 			s3 := item["s3"].(*types.AttributeValueMemberS).Value
 			status := item["status"].(*types.AttributeValueMemberS).Value
+			title := item["title"].(*types.AttributeValueMemberS).Value
 			vList = append(vList, schema.ListEntry{
 				VID:    id,
 				S3:     s3,
 				Status: status,
+				Title:  title,
 			})
 		}
-		c.JSON(200, gin.H{"items": resp.Items})
+		c.JSON(200, schema.ListResponse{
+			Videos: vList,
+		})
 	}
 }
