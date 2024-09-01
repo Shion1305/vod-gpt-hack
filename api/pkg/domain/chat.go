@@ -8,3 +8,9 @@ type ChatRequest struct {
 	To       float32
 	VID      uuid.UUID
 }
+
+type SummaryRequest struct {
+	VID  uuid.UUID
+	From float32
+	To   float32
+}
