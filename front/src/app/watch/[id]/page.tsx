@@ -2,12 +2,12 @@
 
 import {
   ChatContainer,
-  MessageList,
   Message,
   MessageInput,
+  MessageList,
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { v4 as uuidv4 } from "uuid";
 import SubtitleSummary from "@/components/SubtitleSummary";
@@ -94,7 +94,8 @@ const App = () => {
   const handleSummarize = async () => {
     try {
       // APIエンドポイントに要約リクエストを送信
-      const response = await fetch("/api/v1/summary", {
+      const url = `${host}/api/v1/summary`;
+      const postResponse = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,18 +105,21 @@ const App = () => {
           to: selectionEnd, // 選択範囲の終了時間（秒）
           vid: videoId, // ビデオの一意識別子
         }),
+        redirect: "manual",
       });
-
-      // レスポンスが正常でない場合はエラーをスロー
-      if (!response.ok) {
-        throw new Error("API request failed");
+      if (!postResponse.ok) {
+        console.log("failed to send message");
+        console.log(postResponse);
+        return;
       }
-
-      // レスポンスのJSONを解析
-      const data = await response.json();
-
-      // 生成された要約を状態にセット
-      setSummary(data.summary);
+      const id = await postResponse.json().then((data) => data.id);
+      const eventSource = new EventSource(`${host}/api/v1/chat/${id}`);
+      let aiResponse = "";
+      eventSource.addEventListener("delta", (event) => {
+        const data = event.data;
+        aiResponse += data;
+        setSummary(aiResponse);
+      });
     } catch (error) {
       // エラーをコンソールに出力
       console.error("Error generating summary:", error);
@@ -208,7 +212,8 @@ const App = () => {
     if (file) {
       const url = URL.createObjectURL(file);
       setVideoSrc(url);
-      setVideoId(uuidv4()); // 新しいビデオIDを生成
+      setVideoId(uuidv4());
+      // 新しいビデオIDを生成
     }
   };
 
