@@ -59,7 +59,7 @@ func implement(g *gin.RouterGroup, s *s3.S3, d *dynamo.Dynamo, sq *sqs.SQS) erro
 	g.Handle("GET", "/media/id", mediaHandler.Create())
 	g.Handle("POST", "/chat", chatHandler.Start())
 	g.Handle("GET", "/chat/:id", chatHandler.Send())
-	g.Handle("GET", "/media/list", listHandler.List())
+	g.Handle("POST", "/media/list", listHandler.List())
 	g.Handle("POST", "/summary", summaryHandler.Start())
 	g.Handle("GET", "/summary/:id", summaryHandler.Send())
 	return nil
