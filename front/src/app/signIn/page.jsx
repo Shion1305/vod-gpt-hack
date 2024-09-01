@@ -38,28 +38,27 @@ export default function SignIn() {
       <CardHeader>
         <CardTitle>サインイン</CardTitle>
         <CardDescription>Eメールとパスワードでログインしましょう。</CardDescription>
-      </CardHeader>
-      <CardContent>
+        </CardHeader>
+        <CardContent>
+
         <form>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input id="email" placeholder="Email of your project" onChange={(e) => setEmail(e.target.value)} />
-            </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="Password">Password</Label>
               <Input id="password" type='password' onChange={(e) => setPassword(e.target.value)}/>
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" placeholder="Name of your project" />
             </div>
-          </div>
         </form>
-      </CardContent>
+        </CardContent>
       <CardFooter className="flex justify-between">
         <Button onClick={onSubmit}>サインイン</Button>
         <a href='/signUp'>サインアップへ</a>
       </CardFooter>
     </Card>
 
-    </div>
+</div>
   )
 }
 
