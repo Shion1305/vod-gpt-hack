@@ -1,69 +1,71 @@
 'use client'
 
-// import styles from '../styles/Home.module.css'
-// 現時点で使わないものもあるが今後のことを考えて入れておく
-import { Col, Container, Form, FormGroup, Input, Label, Row, Button } from "reactstrap";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase} from '../supabase'
+import { useRouter } from "next/navigation";
+import * as React from "react"
 
-// supabase
-import { supabase } from '../utils/supabase';
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
+export default function SignIn() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
-export default function Register() {
-  // useStateでユーザーが入力したメールアドレスとパスワードをemailとpasswordに格納する
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  // supabaseのユーザー登録の関数
-  const doRegister =  async () => {
-    // supabaseで用意されているユーザー登録の関数
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) throw new Error(error.message)
-    console.log(data)
-  }
+  const onSubmit = async(e) => {
+      e.preventDefault();
+      try{
+        const { error:signUpError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+        })
+        if (signUpError) {
+          throw signUpError;
+        }
+      alert('登録完了メールを確認してください');
+      }catch(error){
+        alert('エラーが発生しました');
+      }
+    };
 
   return (
-    // Home.module.cssでcardクラスに適用されているCCSを、このdivタグに適用する
-    <div className={styles.card}>
-      <h1>新規登録</h1>
-      <div>
-        <Form>
-            <FormGroup>
-              <Label>
-                メールアドレス：
-              </Label>
-              <Input
-                type="email"
-                name="email"
-                style={{ height: 50, fontSize: "1.2rem" }}
-                // onChangeでユーザーが入力した値を取得し、その値をemailに入れる
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>
-                パスワード：
-              </Label>
-              <Input
-                type="password"
-                name="password"
-                style={{ height: 50, fontSize: "1.2rem" }}
-                // onChangeでユーザーが入力した値を取得し、その値をpasswordに入れる
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </FormGroup>
-            <Button
-                style={{ width: 220 }}
-                color="primary"
-                // 登録ボタンがクリックされたとき関数が実行されるようにする
-                onClick={()=>{
-                  doRegister();
-                }}
-              >
-              登録
-            </Button>
-        </Form>
-      </div>
+    <div className="w-screen h-screen flex flex-row items-center justify-center">
+
+    <Card className="w-[60%]">
+      <CardHeader>
+        <CardTitle>サインアップ</CardTitle>
+        <CardDescription>Eメールとパスワードでサインアップしましょう。</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" placeholder="Email of your project" onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="Password">Password</Label>
+              <Input id="password" type='password' onChange={(e) => setPassword(e.target.value)}/>
+            </div>
+          </div>
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button onClick={onSubmit}>サインアップ</Button>
+        <a href='/signIn'>サインインへ</a>
+      </CardFooter>
+    </Card>
     </div>
   )
 }
+
+

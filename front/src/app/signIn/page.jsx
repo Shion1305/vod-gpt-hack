@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { supabase} from '../../utils/supabase'
+import { supabase} from '../supabase'
 import { useRouter } from "next/navigation";
 import * as React from "react"
 
@@ -16,61 +16,46 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
-export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const router = useRouter();
+export default function SignIn() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const router = useRouter()
 
-  const doLogin = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
-    console.log(data);
-    router.reload();
+  const onSubmit = async () => {
+    try {
+      await supabase.auth.signInWithPassword({email, password})
+      router.push('/')
+    } catch (e) {
+      console.log(e) 
+    }
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-brack">
+    <div className="w-screen h-screen flex flex-row items-center justify-center">
 
-    <Card className="w-[40%]">
+    <Card className="w-[60%]">
       <CardHeader>
         <CardTitle>サインイン</CardTitle>
-        <CardDescription>Deploy your new project in one-click.</CardDescription>
+        <CardDescription>Eメールとパスワードでログインしましょう。</CardDescription>
       </CardHeader>
       <CardContent>
         <form>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Name of your project" />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" placeholder="Email of your project" onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="framework">Framework</Label>
-              <Select>
-                <SelectTrigger id="framework">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectItem value="next">Next.js</SelectItem>
-                  <SelectItem value="sveltekit">SvelteKit</SelectItem>
-                  <SelectItem value="astro">Astro</SelectItem>
-                  <SelectItem value="nuxt">Nuxt.js</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="Password">Password</Label>
+              <Input id="password" type='password' onChange={(e) => setPassword(e.target.value)}/>
             </div>
           </div>
         </form>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Deploy</Button>
+        <Button onClick={onSubmit}>サインイン</Button>
+        <a href='/signUp'>サインアップへ</a>
       </CardFooter>
     </Card>
     </div>
