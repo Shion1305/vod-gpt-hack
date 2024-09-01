@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase} from '../supabase'
 
@@ -45,8 +46,6 @@ export default function SignIn() {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="Password">Password</Label>
               <Input id="password" type='password' onChange={(e) => setPassword(e.target.value)}/>
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Name of your project" />
             </div>
         </form>
         </CardContent>
