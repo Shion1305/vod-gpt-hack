@@ -23,8 +23,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 const App = () => {
   // チャットメッセージの状態
 
-  const host = "https://vod-gpt.gopher.jp";
-  // const host = "http://localhost:8080";
+  // const host = "https://vod-gpt.gopher.jp";
+  const host = "http://localhost:8080";
   const [messages, setMessages] = useState<
     {
       message?: string;
@@ -148,9 +148,9 @@ const App = () => {
         // APIにリクエストを送信
         const postData = {
           question: "testtestsets",
-          from: 123.5,
-          end: 231.3,
-          vid: "1c47cfd5-d676-4501-8edc-8e49e58a774f",
+          from: 40.5,
+          to: 80.3,
+          vid: "6fd704e8-d41c-4ab1-a702-1f5ae5b793f6",
         };
         const url = `${host}/api/v1/chat`;
         const postResponse = await fetch(url, {
