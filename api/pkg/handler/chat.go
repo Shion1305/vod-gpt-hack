@@ -72,20 +72,32 @@ func (h *ChatHandler) Send() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		fmt.Println("reqID: ", reqID)
 		req := h.cache.pop(reqUUID)
+		if req == nil {
+			req = &domain.ChatRequest{
+				Question: "this is a dummy question",
+				From:     0,
+				To:       100,
+				VID:      reqUUID,
+			}
+		}
 		//// クエリの実行
-		//resp, err := h.d.Execute(c, req.VID.String(), req.From, req.To)
-		//if err != nil {
-		//	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		//	return
-		//}
-		sampleTranscript := "先ほどの議題に戻りますが、この部分についてはもう少し詳細に検討する必要があるかと思います。特に、リスク管理の観点から見た場合、現状のプロセスでは対応が難しい点がいくつか見受けられます。そこで、次のステップとして、各チームから具体的な課題と改善提案を集めて、来週のミーティングで共有することを提案します。また、コストの見積もりについても再度精査が必要ですので、財務チームと連携して進めていきます。皆さんの意見をお聞かせください。"
-		sampleTranscript += "\n---\n"
-		sampleTranscript += "これはある動画の文字起こしです。あなたは優秀なAIアシスタントです。文字起こしの内容を元に、ユーザーの質問に答えてください。\n\n"
+		resp, err := h.d.ExecuteGrouped(c, req.VID.String(), req.From, req.To)
+		if err != nil {
+			fmt.Println(err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		systemInput := resp.Content
+		systemInput += "\n---\n"
+		systemInput += "これはある動画の文字起こしです。あなたは優秀なAIアシスタントです。文字起こしの内容を元に、ユーザーの質問に答えてください。\n\n"
 		//userMessage := "文字起こしで触れられていることを要約して簡潔に答えてください。\n"
 
-		completion, err := h.br.ClaudeMessageStreamCompletion(sampleTranscript, req.Question)
+		fmt.Println("start streaming")
+		completion, err := h.br.ClaudeMessageStreamCompletion(systemInput, "Q: "+req.Question)
 		if err != nil {
+			fmt.Println(err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
