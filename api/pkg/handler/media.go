@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -43,12 +42,12 @@ func NewMediaHandler(s *infraS3.S3, d *infraDynamo.Dynamo, sq *infraSQS.SQS) Med
 
 func (m MediaHandler) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		userID := c.Param("userId")
 		id := uuid.New().String()
-		now := time.Now()
 		media := domain.Media{
-			ID:        id,
-			Status:    domain.InProgress,
-			CreatedAt: now,
+			ID:     id,
+			UserID: userID,
+			Status: domain.InProgress,
 		}
 		item, err := attributevalue.MarshalMap(media)
 		if err != nil {
