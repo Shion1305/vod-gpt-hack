@@ -23,7 +23,7 @@ func (uc *GetTranscript) Execute(c context.Context,
 	ID string, StartTime float32, EndTime float32,
 ) (*dynamodb.QueryOutput, error) {
 	resp, err := uc.d.Client.Query(c, &dynamodb.QueryInput{
-		IndexName:              aws.String("media-id-id-index"),
+		IndexName:              aws.String("media_id-id-index"),
 		TableName:              aws.String("transcribe"),
 		KeyConditionExpression: aws.String("#media_id = :media_id"),
 		FilterExpression:       aws.String("start_time > :start_time AND end_time < :end_time"),
