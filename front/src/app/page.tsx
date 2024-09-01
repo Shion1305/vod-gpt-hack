@@ -1,8 +1,8 @@
 "use client";
 
+import { cache, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import VideoCard from "@/components/VideoCard";
-import { cache, useEffect, useState } from "react";
 
 export default function Page() {
   const host = "http://localhost:8080";

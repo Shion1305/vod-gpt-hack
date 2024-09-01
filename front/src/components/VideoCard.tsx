@@ -1,8 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React from "react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { useRouter } from "next/navigation";
 
 
 const VideoCard = ({vid, s3}: {vid: string, s3: string}) => {

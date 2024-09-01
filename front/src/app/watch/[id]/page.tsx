@@ -7,6 +7,7 @@ import {
   MessageList,
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
+import { useSearchParams , useParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { v4 as uuidv4 } from "uuid";
@@ -19,8 +20,6 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSearchParams } from "next/navigation";
-import { useParams } from "next/navigation";
 
 const App = () => {
   // チャットメッセージの状態
