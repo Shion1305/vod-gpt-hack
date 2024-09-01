@@ -52,7 +52,7 @@ func (h *ChatHandler) Start() gin.HandlerFunc {
 		reqID := chatRequest.VID
 		h.cache.add(reqID, chatRequest)
 		// send redirect to GET /api/v1/chat/:id
-		c.Redirect(http.StatusFound, "/api/v1/chat/"+reqID.String())
+		c.AbortWithStatusJSON(http.StatusCreated, gin.H{"id": reqID})
 		return
 	}
 }
