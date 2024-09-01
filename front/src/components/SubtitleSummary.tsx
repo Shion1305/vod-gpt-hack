@@ -9,7 +9,7 @@ const SubtitleSummary: React.FC<{
   onSummarize: () => void; // 要約ボタンがクリックされたときのコールバック関数
 }> = ({ subtitle, summary, onSummarize }) => {
   return (
-    <div className="mt-4">
+    <div className="mt-4 flex flex-col items-center">
       {/* 字幕表示エリア */}
       <textarea
         className="w-full h-20 mb-4 p-2 border rounded"
@@ -26,7 +26,7 @@ const SubtitleSummary: React.FC<{
       />
       {/* 要約生成ボタン */}
       <button
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+        className="mt-4 bg-blue-500 text-white px-8 py-4 rounded hover:bg-blue-600 transition-colors text-lg"
         onClick={onSummarize}
       >
         要約を出す
