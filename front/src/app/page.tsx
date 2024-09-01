@@ -15,7 +15,6 @@ import SubtitleSummary from "@/components/SubtitleSummary";
 import ResizableLayout from '@/components/ResizableLayout';
 import Timeline from "@/components/Timeline";
 import VideoPlayer from "@/components/VideoPlayer";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/solid";
 import { v4 as uuidv4 } from 'uuid';
 
 const App = () => {
@@ -227,7 +226,7 @@ const App = () => {
         <div className="bg-gray-900 p-6 flex flex-col h-full">
           <div className="flex-1 overflow-y-auto flex flex-col">
             <div className="flex-1 mb-6">
-              <div className="relative mb-4">
+              <div className="relative mb-4 flex justify-center">
                 <input
                   type="file"
                   accept="video/*"
@@ -237,7 +236,7 @@ const App = () => {
                 />
                 <label
                   htmlFor="file-upload"
-                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200"
+                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded transition duration-200 text-lg"
                 >
                   動画をアップ
                 </label>
