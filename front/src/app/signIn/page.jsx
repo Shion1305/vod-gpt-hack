@@ -32,7 +32,7 @@ export default function SignIn() {
   };
 
   return (
-    <div className="w-screen h-screen flex flex-row items-center justify-center">
+    <div className="h-screen w-screen flex justify-center items-center">
 
     <Card className="w-[60%]">
       <CardHeader>
@@ -58,6 +58,7 @@ export default function SignIn() {
         <a href='/signUp'>サインアップへ</a>
       </CardFooter>
     </Card>
+
     </div>
   )
 }
