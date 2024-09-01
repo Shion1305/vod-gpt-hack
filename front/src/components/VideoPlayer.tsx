@@ -21,10 +21,12 @@ const VideoPlayer = ({
   const [isPlaying, setIsPlaying] = useState(false);
   // 音量を管理するstate
   const [volume, setVolume] = useState(1);
+  // 現在の再生時間を管理するstate
+  const [displayTime, setDisplayTime] = useState(0);
 
   // currentTimeが変更されたときに、ビデオの再生位置を更新
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && Math.abs(videoRef.current.currentTime - currentTime) > 0.1) {
       videoRef.current.currentTime = currentTime;
     }
   }, [currentTime]);
@@ -57,12 +59,22 @@ const VideoPlayer = ({
     }
   };
 
+  // 現在の再生時間をフォーマットする関数
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
   return (
     <div className="w-full bg-black rounded-lg overflow-hidden shadow-xl">
       <video
         ref={videoRef}
         className="w-full"
-        onTimeUpdate={(e) => onTimeUpdate(e.currentTarget.currentTime)}
+        onTimeUpdate={(e) => {
+          onTimeUpdate(e.currentTarget.currentTime);
+          setDisplayTime(e.currentTarget.currentTime);
+        }}
         onLoadedMetadata={(e) => onDurationChange(e.currentTarget.duration)}
       >
         お使いのブラウザは動画タグをサポートしていません。
@@ -80,6 +92,10 @@ const VideoPlayer = ({
               <PlayIcon className="h-6 w-6" />
             )}
           </button>
+          {/* 現在の再生時間表示 */}
+          <div className="text-white">
+            {formatTime(displayTime)} / {videoRef.current ? formatTime(videoRef.current.duration) : '0:00'}
+          </div>
           {/* 音量コントロール */}
           <div className="flex items-center">
             <input

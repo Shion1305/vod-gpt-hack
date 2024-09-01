@@ -12,10 +12,10 @@ import {
 import React, { useState, useCallback, useEffect } from "react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { v4 as uuidv4 } from "uuid";
+import ResizableLayout from "@/components/ResizableLayout";
 import SubtitleSummary from "@/components/SubtitleSummary";
 import Timeline from "@/components/Timeline";
 import VideoPlayer from "@/components/VideoPlayer";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/solid";
 
 const App = () => {
   // チャットメッセージの状態
@@ -27,7 +27,6 @@ const App = () => {
       direction: "incoming" | "outgoing" | 0 | 1;
       position: "single" | "first" | "normal" | "last" | 0 | 1 | 2 | 3;
       type?: "html" | "text" | "image" | "custom";
-      payload?: MessagePayload;
     }[]
   >([]);
 
@@ -69,11 +68,39 @@ const App = () => {
     setSelectionEnd(end);
   };
 
-  // 要約を生成する関数（現在はプレースホルダーの実装）
-  const handleSummarize = () => {
-    setSummary(
-      `${selectionStart.toFixed(2)}秒から${selectionEnd.toFixed(2)}秒までの要約がここに表示されます。`
-    );
+  // 選択範囲の要約を生成する非同期関数
+  const handleSummarize = async () => {
+    try {
+      // APIエンドポイントに要約リクエストを送信
+      const response = await fetch("/api/v1/summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: selectionStart, // 選択範囲の開始時間（秒）
+          to: selectionEnd, // 選択範囲の終了時間（秒）
+          vid: videoId, // ビデオの一意識別子
+        }),
+      });
+
+      // レスポンスが正常でない場合はエラーをスロー
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      // レスポンスのJSONを解析
+      const data = await response.json();
+
+      // 生成された要約を状態にセット
+      setSummary(data.summary);
+    } catch (error) {
+      // エラーをコンソールに出力
+      console.error("Error generating summary:", error);
+
+      // エラーメッセージを要約状態にセット
+      setSummary("申し訳ありませんが、要約の生成中にエラーが発生しました。");
+    }
   };
 
   // メッセージを送信し、APIと通信する関数
@@ -170,15 +197,9 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900">
-      {" "}
-      {/* メインコンテナ */}
-      <div className="w-1/2 bg-gray-800 shadow-md">
-        {" "}
-        {/* チャット部分 */}
-        <MainContainer className="bg-gray-800 text-gray-100 relative">
-          <div className="absolute inset-0 bg-gray-900 opacity-50 z-0"></div>{" "}
-          {/* 背景の暗い色 */}
+    <ResizableLayout
+      leftContent={
+        <MainContainer className="bg-gray-800 text-gray-100 relative h-full">
           <ChatContainer className="bg-gray-800 relative z-10">
             <MessageList
               typingIndicator={
@@ -212,55 +233,64 @@ const App = () => {
               onSend={handleSend}
               attachButton={false}
               className="bg-gray-700 text-gray-100 border-gray-600 text-xl"
-              onKeyDown={handleKeyDown} // Enterキーでメッセージを送信
+              onKeyDown={handleKeyDown}
             />
           </ChatContainer>
         </MainContainer>
-      </div>
-      <div className="w-1/2 bg-gray-900 p-6 flex flex-col">
-        {" "}
-        {/* ビデオプレーヤーとタイムライン部分 */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          <div className="flex-1 mb-6">
-            <input
-              type="file"
-              accept="video/*"
-              onChange={handleFileChange}
-              className="mb-4 text-gray-100 bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-full transition duration-200"
-            />
-            {videoSrc && (
-              <VideoPlayer
-                src={videoSrc}
-                currentTime={currentTime}
-                onTimeUpdate={handleTimeChange}
-                onDurationChange={handleDurationChange}
+      }
+      rightContent={
+        <div className="bg-gray-900 p-6 flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            <div className="flex-1 mb-6">
+              <div className="relative mb-4 flex justify-center">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded transition duration-200 text-lg"
+                >
+                  動画をアップ
+                </label>
+              </div>
+              {videoSrc && (
+                <VideoPlayer
+                  src={videoSrc}
+                  currentTime={currentTime}
+                  onTimeUpdate={handleTimeChange}
+                  onDurationChange={handleDurationChange}
+                />
+              )}
+            </div>
+            <div className="flex-1">
+              <Timeline
+                currentTime={(currentTime / videoDuration) * 100}
+                selectionStart={(selectionStart / videoDuration) * 100}
+                selectionEnd={(selectionEnd / videoDuration) * 100}
+                onTimeChange={(newTime) =>
+                  handleTimeChange((newTime / 100) * videoDuration)
+                }
+                onSelectionChange={(start, end) =>
+                  handleSelectionChange(
+                    (start / 100) * videoDuration,
+                    (end / 100) * videoDuration
+                  )
+                }
               />
-            )}
-          </div>
-          <div className="flex-1">
-            <Timeline
-              currentTime={(currentTime / videoDuration) * 100}
-              selectionStart={(selectionStart / videoDuration) * 100}
-              selectionEnd={(selectionEnd / videoDuration) * 100}
-              onTimeChange={(newTime) =>
-                handleTimeChange((newTime / 100) * videoDuration)
-              }
-              onSelectionChange={(start, end) =>
-                handleSelectionChange(
-                  (start / 100) * videoDuration,
-                  (end / 100) * videoDuration
-                )
-              }
-            />
-            <SubtitleSummary
-              subtitle={subtitle}
-              summary={summary}
-              onSummarize={handleSummarize}
-            />
+              <SubtitleSummary
+                subtitle={subtitle}
+                summary={summary}
+                onSummarize={handleSummarize}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      }
+    />
   );
 };
 
