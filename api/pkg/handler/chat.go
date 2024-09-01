@@ -81,7 +81,7 @@ func (h *ChatHandler) Send() gin.HandlerFunc {
 		//}
 		sampleTranscript := "先ほどの議題に戻りますが、この部分についてはもう少し詳細に検討する必要があるかと思います。特に、リスク管理の観点から見た場合、現状のプロセスでは対応が難しい点がいくつか見受けられます。そこで、次のステップとして、各チームから具体的な課題と改善提案を集めて、来週のミーティングで共有することを提案します。また、コストの見積もりについても再度精査が必要ですので、財務チームと連携して進めていきます。皆さんの意見をお聞かせください。"
 		sampleTranscript += "\n---\n"
-		sampleTranscript += "あなたは優秀な秘書です。上記の動画の文字起こしを元に、ユーザーの質問に答えてください。\n\n"
+		sampleTranscript += "これはある動画の文字起こしです。あなたは優秀なAIアシスタントです。文字起こしの内容を元に、ユーザーの質問に答えてください。\n\n"
 		//userMessage := "文字起こしで触れられていることを要約して簡潔に答えてください。\n"
 
 		completion, err := h.br.ClaudeMessageStreamCompletion(sampleTranscript, req.Question)
