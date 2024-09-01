@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
 import { PlayIcon, PauseIcon } from "@heroicons/react/24/solid";
+import React, { useEffect, useRef, useState } from "react";
 
 // VideoPlayerコンポーネントの型定義
 const VideoPlayer = ({
@@ -10,10 +10,10 @@ const VideoPlayer = ({
   onTimeUpdate,
   onDurationChange,
 }: {
-  src: string;                                    // ビデオのソースURL
-  currentTime: number;                            // 現在の再生時間
-  onTimeUpdate: (newTime: number) => void;        // 再生時間が更新されたときのコールバック関数
-  onDurationChange: (duration: number) => void;   // ビデオの長さが変更されたときのコールバック関数
+  src: string; // ビデオのソースURL
+  currentTime: number; // 現在の再生時間
+  onTimeUpdate: (newTime: number) => void; // 再生時間が更新されたときのコールバック関数
+  onDurationChange: (duration: number) => void; // ビデオの長さが変更されたときのコールバック関数
 }) => {
   // ビデオ要素への参照
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -26,7 +26,10 @@ const VideoPlayer = ({
 
   // currentTimeが変更されたときに、ビデオの再生位置を更新
   useEffect(() => {
-    if (videoRef.current && Math.abs(videoRef.current.currentTime - currentTime) > 0.1) {
+    if (
+      videoRef.current &&
+      Math.abs(videoRef.current.currentTime - currentTime) > 0.1
+    ) {
       videoRef.current.currentTime = currentTime;
     }
   }, [currentTime]);
@@ -63,7 +66,7 @@ const VideoPlayer = ({
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   return (
@@ -94,7 +97,8 @@ const VideoPlayer = ({
           </button>
           {/* 現在の再生時間表示 */}
           <div className="text-white">
-            {formatTime(displayTime)} / {videoRef.current ? formatTime(videoRef.current.duration) : '0:00'}
+            {formatTime(displayTime)} /{" "}
+            {videoRef.current ? formatTime(videoRef.current.duration) : "0:00"}
           </div>
           {/* 音量コントロール */}
           <div className="flex items-center">

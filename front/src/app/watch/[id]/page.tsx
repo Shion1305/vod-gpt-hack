@@ -22,6 +22,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const App = () => {
   // チャットメッセージの状態
+
+  const host = "https://vod-gpt.gopher.jp";
+  // const host = "http://localhost:8080";
   const [messages, setMessages] = useState<
     {
       message?: string;
@@ -122,6 +125,8 @@ const App = () => {
     }
   };
 
+  var aiResponse = "";
+
   // メッセージを送信し、APIと通信する関数
   const handleSend = useCallback(
     async (message: string) => {
@@ -141,35 +146,44 @@ const App = () => {
 
       try {
         // APIにリクエストを送信
-        const response = await fetch("/api/v1/chat", {
+        const postData = {
+          question: "testtestsets",
+          from: 123.5,
+          end: 231.3,
+          vid: "1c47cfd5-d676-4501-8edc-8e49e58a774f",
+        };
+        const url = `${host}/api/v1/chat`;
+        const postResponse = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            question: message,
-            from: selectionStart,
-            to: selectionEnd,
-            vid: videoId,
-          }),
+          body: JSON.stringify(postData),
+          redirect: "manual",
         });
-
-        if (!response.ok) {
-          throw new Error("API request failed");
+        if (!postResponse.ok) {
+          console.log("failed to send message");
+          console.log(postResponse);
+          return;
         }
+        const id = await postResponse.json().then((data) => data.id);
+        const prevMessages = messages;
+        const eventSource = new EventSource(`${host}/api/v1/chat/${id}`);
+        aiResponse = "";
 
-        const data = await response.json();
-
-        // AIの応答をチャットに追加
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            message: data.response,
-            direction: "incoming",
-            sender: "AI",
-            position: "single",
-          },
-        ]);
+        eventSource.addEventListener("delta", (event) => {
+          const data = event.data;
+          aiResponse += data;
+          setMessages((_) => [
+            ...prevMessages,
+            {
+              message: aiResponse,
+              direction: "incoming",
+              sender: "AI",
+              position: "single",
+            },
+          ]);
+        });
       } catch (error) {
         console.error("Error sending message:", error);
         // エラーメッセージをチャットに追加
@@ -210,8 +224,8 @@ const App = () => {
     if (event.key === "Enter") {
       event.preventDefault();
       const input = event.target as HTMLInputElement;
-      handleSend(input.value);
-      input.value = ""; // メッセージ送信後に入力フィールドをクリア
+      handleSend(input.innerText);
+      input.innerText = ""; // メッセージ送信後に入力フィールドをクリア
     }
   };
 
